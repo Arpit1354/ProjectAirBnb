@@ -1,19 +1,207 @@
 <% layout("/layouts/boilerplate") %>
 
-<div class="row mt-3">
-    <h1 class="col-6 offset-3" >Login on Wanderlust</h1>
-    <div class="col-6 offset-3">
-    <form action="/user/login" method="post">
-        <div class="mb-3">
-        <label for="username" class="form-label" >Username</label>
-        <input name="username" id="username"   type="text" class="form-control" required>
-        <div class="valid-feedback">Looks good!</div>
-        </div>
-         <div class="mb-3">
-        <label for="password" class="form-label" >password</label>
-        <input name="password" id="password"   type="password" class="form-control" required>
-        </div>
-        <button class="btn btn-success" >Login</button>
-    </form>
+<style>
+  * { box-sizing: border-box; }
+
+  .auth-page {
+    min-height: calc(100vh - 64px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 16px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #f7f7f7;
+  }
+
+  .auth-card {
+    background: #fff; border-radius: 20px;
+    border: 1px solid #ebebeb;
+    width: 100%; max-width: 420px;
+    overflow: hidden;
+  }
+
+  .auth-header {
+    padding: 32px 32px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: center;
+  }
+  .auth-logo {
+    width: 44px; height: 44px; background: #fe424d;
+    border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; margin: 0 auto 14px;
+  }
+  .auth-logo i { color: #fff; font-size: 20px; }
+  .auth-title { font-size: 22px; font-weight: 800; color: #111; letter-spacing: -0.3px; margin-bottom: 4px; }
+  .auth-sub { font-size: 14px; color: #888; }
+
+  .auth-body { padding: 28px 32px; }
+
+  .af-field { margin-bottom: 18px; }
+  .af-field label {
+    display: block; font-size: 13px; font-weight: 500;
+    color: #444; margin-bottom: 6px;
+  }
+  .af-field input {
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid #e8e8e8; border-radius: 10px;
+    font-size: 14px; color: #111; background: #fafafa;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: border-color .15s, box-shadow .15s; outline: none;
+  }
+  .af-field input:focus {
+    border-color: #fe424d; background: #fff;
+    box-shadow: 0 0 0 3px rgba(254,66,77,.08);
+  }
+  .af-field input::placeholder { color: #bbb; }
+  .af-field .invalid-msg {
+    font-size: 12px; color: #fe424d; margin-top: 5px; display: none;
+  }
+  .af-field input.is-invalid ~ .invalid-msg { display: block; }
+  .af-field input.is-invalid { border-color: #fe424d; }
+
+  /* Password toggle */
+  .pw-wrap { position: relative; }
+  .pw-toggle {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    color: #aaa; font-size: 14px; padding: 0; transition: color .15s;
+  }
+  .pw-toggle:hover { color: #555; }
+
+  /* Forgot password */
+  .field-top {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 6px;
+  }
+  .field-top label { font-size: 13px; font-weight: 500; color: #444; margin: 0; }
+  .forgot-link { font-size: 12.5px; color: #fe424d; text-decoration: none; font-weight: 500; }
+  .forgot-link:hover { text-decoration: underline; }
+
+  .btn-login {
+    width: 100%; padding: 13px; background: #fe424d; color: #fff;
+    border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: background .15s, transform .1s; margin-top: 4px;
+  }
+  .btn-login:hover { background: #e03540; }
+  .btn-login:active { transform: scale(.98); }
+
+  .auth-footer {
+    padding: 20px 32px 28px; text-align: center;
+    border-top: 1px solid #f5f5f5;
+  }
+  .auth-footer p { font-size: 13.5px; color: #888; }
+  .auth-footer a { color: #fe424d; text-decoration: none; font-weight: 600; }
+  .auth-footer a:hover { text-decoration: underline; }
+
+  /* Welcome back illustration strip */
+  .auth-banner {
+    background: #111; padding: 20px 32px;
+    display: flex; align-items: center; gap: 14px;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .auth-banner-icon {
+    width: 40px; height: 40px; background: rgba(254,66,77,.2);
+    border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+  }
+  .auth-banner-icon i { color: #fe424d; font-size: 17px; }
+  .auth-banner-text p { font-size: 13px; font-weight: 600; color: #fff; margin: 0 0 2px; }
+  .auth-banner-text span { font-size: 12px; color: rgba(255,255,255,.45); }
+
+  @media (max-width: 480px) {
+    .auth-header { padding: 24px 20px 20px; }
+    .auth-body { padding: 20px; }
+    .auth-footer { padding: 16px 20px 24px; }
+    .auth-banner { padding: 16px 20px; }
+  }
+</style>
+
+<div class="auth-page">
+  <div class="auth-card">
+
+    <div class="auth-header">
+      <div class="auth-logo"><i class="fa-regular fa-compass"></i></div>
+      <h1 class="auth-title">Welcome back</h1>
+      <p class="auth-sub">Log in to continue your journey</p>
     </div>
+
+    <div class="auth-banner">
+      <div class="auth-banner-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+      <div class="auth-banner-text">
+        <p>1,200+ stays waiting for you</p>
+        <span>From mountain cabins to beachfront villas</span>
+      </div>
+    </div>
+
+    <div class="auth-body">
+      <form action="/user/login" method="POST" novalidate id="loginForm">
+
+        <div class="af-field">
+          <label for="username">Username</label>
+          <input
+            name="username" id="username"
+            type="text" placeholder="Enter your username"
+            autocomplete="username" required
+          />
+          <div class="invalid-msg">Please enter your username</div>
+        </div>
+
+        <div class="af-field">
+          <div class="field-top">
+            <label for="password">Password</label>
+            <a class="forgot-link" href="#">Forgot password?</a>
+          </div>
+          <div class="pw-wrap">
+            <input
+              name="password" id="password"
+              type="password" placeholder="Enter your password"
+              autocomplete="current-password" required
+            />
+            <button type="button" class="pw-toggle" id="pwToggle">
+              <i class="fa-regular fa-eye" id="pwIcon"></i>
+            </button>
+          </div>
+          <div class="invalid-msg">Please enter your password</div>
+        </div>
+
+        <button class="btn-login" type="submit">Log in</button>
+
+      </form>
+    </div>
+
+    <div class="auth-footer">
+      <p>Don't have an account? <a href="/user/signup">Sign up for free</a></p>
+    </div>
+
+  </div>
 </div>
+
+<script>
+  // Password show/hide toggle
+  var pwInput = document.getElementById('password');
+  var pwIcon = document.getElementById('pwIcon');
+  document.getElementById('pwToggle').addEventListener('click', function() {
+    var isText = pwInput.type === 'text';
+    pwInput.type = isText ? 'password' : 'text';
+    pwIcon.className = isText ? 'fa-regular fa-eye' : 'fa-regular fa-eye-slash';
+  });
+
+  // Validation
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
+    var valid = true;
+    this.querySelectorAll('[required]').forEach(function(input) {
+      if (!input.value.trim()) {
+        input.classList.add('is-invalid');
+        valid = false;
+      } else {
+        input.classList.remove('is-invalid');
+      }
+    });
+    if (!valid) e.preventDefault();
+  });
+
+  document.querySelectorAll('.af-field input').forEach(function(input) {
+    input.addEventListener('input', function() {
+      if (this.value.trim()) this.classList.remove('is-invalid');
+    });
+  });
+</script>

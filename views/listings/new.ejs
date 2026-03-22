@@ -1,40 +1,477 @@
 <% layout("/layouts/boilerplate") %>
-        <div class="row mt-3">
-        <h2>Create a new Listing</h2><br>
-    
-        <div class="col-8 ">
-        <form method="post" action="/listings" novalidate class="needs-validation" enctype="multipart/form-data" >
-        <div class="mb-3">
-        <label for="title" class="form-label" >Title</label>
-        <input name="listing[title]"type="text" placeholder="enter title" class="form-control" required>
+
+<style>
+  * { box-sizing: border-box; }
+
+  /* Override boilerplate container for full-width wizard */
+  .container { max-width: 100% !important; padding: 0 !important; }
+
+  .wz-wrap {
+    display: grid;
+    grid-template-columns: 1fr 480px;
+    min-height: calc(100vh - 64px);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  @media (max-width: 900px) { .wz-wrap { grid-template-columns: 1fr; } }
+
+  /* ── LEFT PANEL ── */
+  .wz-left {
+    background: #111; padding: 48px 40px;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  @media (max-width: 900px) { .wz-left { display: none; } }
+
+  .wz-left-bg {
+    position: absolute; inset: 0;
+    background: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80') center/cover;
+    opacity: .18;
+  }
+  .wz-left-content { position: relative; z-index: 1; }
+
+  .wz-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 56px; text-decoration: none; }
+  .wz-logo-icon { width: 36px; height: 36px; background: #fe424d; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .wz-logo-icon i { color: #fff; font-size: 16px; }
+  .wz-logo-name { font-size: 16px; font-weight: 700; color: #fff; }
+
+  .wz-steps { display: flex; flex-direction: column; gap: 6px; }
+  .wz-step-item { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 12px; transition: background .2s; }
+  .wz-step-item.active { background: rgba(255,255,255,.1); }
+  .wz-step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; flex-shrink: 0;
+    border: 1.5px solid rgba(255,255,255,.2); color: rgba(255,255,255,.3);
+    transition: all .3s;
+  }
+  .wz-step-item.active .wz-step-num { background: #fe424d; border-color: #fe424d; color: #fff; }
+  .wz-step-item.done .wz-step-num { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.3); color: #fff; }
+  .wz-step-label { font-size: 13px; font-weight: 600; color: rgba(255,255,255,.35); transition: color .3s; }
+  .wz-step-item.active .wz-step-label,
+  .wz-step-item.done .wz-step-label { color: #fff; }
+  .wz-step-sub { font-size: 11.5px; color: rgba(255,255,255,.28); }
+  .wz-step-item.active .wz-step-sub { color: rgba(255,255,255,.55); }
+
+  .wz-left-footer { position: relative; z-index: 1; }
+  .wz-quote { font-size: 13.5px; color: rgba(255,255,255,.45); line-height: 1.7; font-style: italic; }
+  .wz-quote-author { font-size: 12px; color: rgba(255,255,255,.28); margin-top: 6px; }
+
+  /* ── RIGHT PANEL ── */
+  .wz-right { background: #fff; display: flex; flex-direction: column; }
+  .wz-right-header {
+    padding: 28px 36px 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .step-counter { font-size: 12.5px; color: #bbb; font-weight: 500; }
+  .wz-save-exit { font-size: 13px; color: #bbb; text-decoration: none; transition: color .15s; }
+  .wz-save-exit:hover { color: #111; }
+
+  .wz-progress-bar { height: 3px; background: #f0f0f0; margin: 18px 36px 0; border-radius: 999px; overflow: hidden; }
+  .wz-progress-fill { height: 100%; background: #fe424d; border-radius: 999px; transition: width .4s ease; }
+
+  .wz-right-body { flex: 1; padding: 32px 36px; overflow-y: auto; }
+
+  /* ── STEP PANELS ── */
+  .step-panel { display: none; animation: fadeIn .3s ease; }
+  .step-panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+
+  .step-eyebrow { font-size: 11.5px; font-weight: 600; color: #fe424d; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+  .step-title { font-size: 22px; font-weight: 800; color: #111; letter-spacing: -0.4px; margin-bottom: 6px; }
+  .step-sub { font-size: 14px; color: #888; line-height: 1.6; margin-bottom: 28px; }
+
+  /* ── FIELDS ── */
+  .nl-field { margin-bottom: 18px; }
+  .nl-field label { display: block; font-size: 13px; font-weight: 500; color: #444; margin-bottom: 6px; }
+  .nl-field input,
+  .nl-field textarea {
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid #e8e8e8; border-radius: 10px;
+    font-size: 14px; color: #111; background: #fafafa;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: border-color .15s, box-shadow .15s;
+    outline: none;
+  }
+  .nl-field input:focus,
+  .nl-field textarea:focus { border-color: #fe424d; background: #fff; box-shadow: 0 0 0 3px rgba(254,66,77,.08); }
+  .nl-field input::placeholder,
+  .nl-field textarea::placeholder { color: #bbb; }
+  .nl-field textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+  .field-hint { font-size: 12px; color: #bbb; margin-top: 5px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 540px) { .field-row { grid-template-columns: 1fr; } }
+
+  /* ── IMAGE UPLOAD ── */
+  .img-upload-area {
+    border: 2px dashed #e0e0e0; border-radius: 14px;
+    padding: 28px 20px; text-align: center; cursor: pointer;
+    transition: border-color .15s, background .15s;
+    position: relative; background: #fafafa;
+  }
+  .img-upload-area:hover { border-color: #fe424d; background: #fff5f5; }
+  .img-upload-area input[type="file"] {
+    position: absolute; inset: 0; opacity: 0;
+    cursor: pointer; width: 100%; height: 100%;
+  }
+  .img-icon { width: 48px; height: 48px; background: #f0f0f0; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
+  .img-icon i { font-size: 20px; color: #bbb; }
+  .img-upload-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 4px; }
+  .img-upload-sub { font-size: 12px; color: #bbb; }
+  .img-preview { display: none; border-radius: 12px; overflow: hidden; margin-top: 14px; }
+  .img-preview img { width: 100%; height: 180px; object-fit: cover; }
+  .img-change-btn {
+    display: block; margin-top: 10px; font-size: 13px;
+    color: #fe424d; cursor: pointer; background: none;
+    border: none; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500;
+  }
+
+  /* ── AMENITIES ── */
+  .amenities-label { font-size: 13px; font-weight: 500; color: #444; margin: 24px 0 12px; }
+  .amenities-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 4px; }
+  @media (max-width: 400px) { .amenities-grid { grid-template-columns: repeat(2, 1fr); } }
+  .amenity-chip {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 14px 10px; border: 1.5px solid #e8e8e8; border-radius: 12px;
+    cursor: pointer; transition: all .15s; text-align: center;
+  }
+  .amenity-chip:hover { border-color: #fe424d; background: #fff5f5; }
+  .amenity-chip.selected { border-color: #fe424d; background: #fff0f0; }
+  .amenity-chip i { font-size: 20px; color: #aaa; transition: color .15s; }
+  .amenity-chip.selected i { color: #fe424d; }
+  .amenity-chip span { font-size: 11.5px; font-weight: 500; color: #555; }
+
+  /* ── PRICE ── */
+  .price-wrap { position: relative; max-width: 220px; }
+  .price-sym { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 15px; font-weight: 700; color: #888; pointer-events: none; }
+  .price-wrap input { padding-left: 34px; font-size: 18px; font-weight: 700; color: #111; }
+
+  /* ── REVIEW ── */
+  .review-card { background: #f9f9f9; border-radius: 14px; padding: 20px; margin-bottom: 16px; border: 1px solid #f0f0f0; }
+  .review-row { display: flex; align-items: flex-start; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #efefef; gap: 12px; }
+  .review-row:last-child { border-bottom: none; }
+  .review-label { font-size: 13px; color: #999; flex-shrink: 0; }
+  .review-value { font-size: 13px; font-weight: 500; color: #111; text-align: right; word-break: break-word; max-width: 260px; }
+
+  .publish-note { font-size: 13px; color: #aaa; line-height: 1.6; margin-top: 12px; }
+  .publish-note i { color: #fe424d; margin-right: 4px; }
+
+  /* ── FOOTER ── */
+  .wz-right-footer {
+    padding: 20px 36px 28px; border-top: 1px solid #f5f5f5;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .btn-back { font-size: 14px; color: #888; background: none; border: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500; padding: 10px 0; transition: color .15s; }
+  .btn-back:hover { color: #111; }
+  .btn-next {
+    background: #fe424d; color: #fff; border: none;
+    border-radius: 10px; padding: 12px 28px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background .15s, transform .1s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-next:hover { background: #e03540; }
+  .btn-next:active { transform: scale(.98); }
+</style>
+
+<!-- Full width override -->
+<script>
+  document.querySelector('.container').style.maxWidth = '100%';
+  document.querySelector('.container').style.padding = '0';
+</script>
+
+<div class="wz-wrap">
+  <!-- LEFT PANEL -->
+  <div class="wz-left">
+    <div class="wz-left-bg"></div>
+    <div class="wz-left-content">
+      <a class="wz-logo" href="/listings">
+        <div class="wz-logo-icon"><i class="fa-regular fa-compass"></i></div>
+        <span class="wz-logo-name">Wanderlust</span>
+      </a>
+      <div class="wz-steps" id="stepNav">
+        <div class="wz-step-item active" data-step="1">
+          <div class="wz-step-num">1</div>
+          <div class="wz-step-text">
+            <div class="wz-step-label">About your place</div>
+            <div class="wz-step-sub">Title & description</div>
+          </div>
         </div>
-        <div class="mb-3">
-        <label for="description" class="form-label" >Description</label>
-        <textarea name="listing[description]" type="text" class="form-control" placeholder="enter a catchy description" required></textarea>
-        <div class="invalid-feedback">Please enter a short description</div>
+        <div class="wz-step-item" data-step="2">
+          <div class="wz-step-num">2</div>
+          <div class="wz-step-text">
+            <div class="wz-step-label">Photos & amenities</div>
+            <div class="wz-step-sub">Make it shine</div>
+          </div>
         </div>
-        <div class="mb-3">
-        <label for="image" class="form-label" >Upload Listing Image</label>
-         <input name="listing[image]" type="file" class="form-control" required >
+        <div class="wz-step-item" data-step="3">
+          <div class="wz-step-num">3</div>
+          <div class="wz-step-text">
+            <div class="wz-step-label">Location & pricing</div>
+            <div class="wz-step-sub">Where & how much</div>
+          </div>
         </div>
-        <div class="row">
-        <div class="mb-3 col-md-4">
-        <label for="price" class="form-label" >Price</label>
-        <input name="listing[price]"  placeholder="enter price" class="form-control" type="number" required>
-        <div class="invalid-feedback">Price should be valid</div>
+        <div class="wz-step-item" data-step="4">
+          <div class="wz-step-num">4</div>
+          <div class="wz-step-text">
+            <div class="wz-step-label">Review & publish</div>
+            <div class="wz-step-sub">Go live!</div>
+          </div>
         </div>
-        <div class="mb-3 col-md-8">
-        <label for="country" class="form-label" >Country</label>
-       <input name="listing[country]" type="text"placeholder="enter country"  class="form-control" required>
-       <div class="invalid-feedback">Country should be valid</div>
-        </div>
-        </div>
-        <div class="mb-3">
-        <label for="location" class="form-label" >location</label>
-        <input name="listing[location]" placeholder="enter location" type="text" class="form-control" required>
-        <div class="invalid-feedback">location should be valid</div>
-        </div>
-        <button class="btn btn-dark add-btn mt-3">Add location</button><br><br>
-    </form>
+      </div>
     </div>
+    <div class="wz-left-footer">
+      <p class="wz-quote">"The world is a book, and those who do not travel read only one page."</p>
+      <p class="wz-quote-author">— Saint Augustine</p>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="wz-right">
+    <div class="wz-right-header">
+      <span class="step-counter" id="stepCounter">Step 1 of 4</span>
+      <a class="wz-save-exit" href="/listings">Save & exit</a>
+    </div>
+    <div class="wz-progress-bar">
+      <div class="wz-progress-fill" id="progressFill" style="width:25%"></div>
+    </div>
+
+    <!-- THE ACTUAL FORM — wraps all steps, submits on step 4 -->
+    <form
+      method="post"
+      action="/listings"
+      enctype="multipart/form-data"
+      novalidate
+      id="listingForm"
+    >
+      <div class="wz-right-body">
+
+        <!-- STEP 1: About -->
+        <div class="step-panel active" id="step1">
+          <div class="step-eyebrow">Step 1</div>
+          <h2 class="step-title">Tell us about your place</h2>
+          <p class="step-sub">Start with a catchy title and a great description to attract guests.</p>
+          <div class="nl-field">
+            <label>Listing title</label>
+            <input name="listing[title]" type="text" placeholder="e.g. Cozy mountain cabin with lake views" required/>
+            <div class="field-hint">Keep it short and memorable — 50 chars max works best</div>
+          </div>
+          <div class="nl-field">
+            <label>Description</label>
+            <textarea name="listing[description]" placeholder="Describe what makes your place special — the view, the vibe, nearby attractions…" required></textarea>
+          </div>
+        </div>
+
+        <!-- STEP 2: Photos & amenities -->
+        <div class="step-panel" id="step2">
+          <div class="step-eyebrow">Step 2</div>
+          <h2 class="step-title">Photos & amenities</h2>
+          <p class="step-sub">Listings with great photos get 3× more bookings. Add your best shot.</p>
+          <div class="img-upload-area" id="uploadArea">
+            <input name="listing[image]" type="file" accept="image/*" id="imgInput" required/>
+            <div class="img-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+            <div class="img-upload-title">Click to upload a photo</div>
+            <div class="img-upload-sub">JPG, PNG or WEBP · max 10MB</div>
+          </div>
+          <div class="img-preview" id="imgPreview">
+            <img id="previewImg" src="" alt="preview"/>
+            <button type="button" class="img-change-btn" id="changeImgBtn">
+              <i class="fa-solid fa-rotate"></i> Change photo
+            </button>
+          </div>
+          <div class="amenities-label">What does your place offer? <span style="color:#bbb;font-weight:400">(optional)</span></div>
+          <div class="amenities-grid">
+            <div class="amenity-chip selected"><i class="fa-solid fa-wifi"></i><span>Wi-Fi</span></div>
+            <div class="amenity-chip"><i class="fa-solid fa-kitchen-set"></i><span>Kitchen</span></div>
+            <div class="amenity-chip"><i class="fa-solid fa-car"></i><span>Parking</span></div>
+            <div class="amenity-chip"><i class="fa-solid fa-snowflake"></i><span>AC</span></div>
+            <div class="amenity-chip"><i class="fa-solid fa-tv"></i><span>TV</span></div>
+            <div class="amenity-chip"><i class="fa-solid fa-paw"></i><span>Pet friendly</span></div>
+            <div class="amenity-chip"><i class="fa-solid fa-water-ladder"></i><span>Pool</span></div>
+            <div class="amenity-chip"><i class="fa-solid fa-dumbbell"></i><span>Gym</span></div>
+            <div class="amenity-chip"><i class="fa-solid fa-fire"></i><span>Fireplace</span></div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Location & pricing -->
+        <div class="step-panel" id="step3">
+          <div class="step-eyebrow">Step 3</div>
+          <h2 class="step-title">Location & pricing</h2>
+          <p class="step-sub">Tell guests where you are and what you charge per night.</p>
+          <div class="field-row">
+            <div class="nl-field">
+              <label>Country</label>
+              <input name="listing[country]" type="text" placeholder="e.g. India" required/>
+            </div>
+            <div class="nl-field">
+              <label>City / location</label>
+              <input name="listing[location]" type="text" placeholder="e.g. Manali, HP" required/>
+            </div>
+          </div>
+          <div class="nl-field" style="margin-top:8px">
+            <label>Price per night</label>
+            <div class="price-wrap">
+              <span class="price-sym">₹</span>
+              <input name="listing[price]" type="number" placeholder="0" min="0" required/>
+            </div>
+            <div class="field-hint">Average listings in India charge ₹1,200–₹3,500 per night</div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Review & publish -->
+        <div class="step-panel" id="step4">
+          <div class="step-eyebrow">Step 4</div>
+          <h2 class="step-title">Review & publish</h2>
+          <p class="step-sub">Everything looks good? Hit publish to go live and start welcoming guests.</p>
+          <div class="review-card">
+            <div class="review-row">
+              <span class="review-label">Title</span>
+              <span class="review-value" id="rv-title">—</span>
+            </div>
+            <div class="review-row">
+              <span class="review-label">Description</span>
+              <span class="review-value" id="rv-desc">—</span>
+            </div>
+            <div class="review-row">
+              <span class="review-label">Location</span>
+              <span class="review-value" id="rv-loc">—</span>
+            </div>
+            <div class="review-row">
+              <span class="review-label">Country</span>
+              <span class="review-value" id="rv-country">—</span>
+            </div>
+            <div class="review-row">
+              <span class="review-label">Price per night</span>
+              <span class="review-value" id="rv-price">—</span>
+            </div>
+            <div class="review-row">
+              <span class="review-label">Photo</span>
+              <span class="review-value" id="rv-photo">—</span>
+            </div>
+          </div>
+          <p class="publish-note">
+            <i class="fa-solid fa-circle-info"></i>
+            By publishing you agree to Wanderlust's hosting terms. You can edit or unpublish any time.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="wz-right-footer">
+        <button type="button" class="btn-back" id="btnBack" style="visibility:hidden">← Back</button>
+        <button type="button" class="btn-next" id="btnNext">
+          Continue <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
+
+<script>
+  let current = 1;
+  const total = 4;
+
+  function updateUI() {
+    document.querySelectorAll('.step-panel').forEach(function(p, i) {
+      p.classList.toggle('active', i + 1 === current);
+    });
+    document.querySelectorAll('.wz-step-item').forEach(function(s, i) {
+      s.classList.remove('active', 'done');
+      if (i + 1 === current) s.classList.add('active');
+      if (i + 1 < current) s.classList.add('done');
+      var num = s.querySelector('.wz-step-num');
+      num.textContent = i + 1 < current ? '✓' : i + 1;
+    });
+    document.getElementById('stepCounter').textContent = 'Step ' + current + ' of ' + total;
+    document.getElementById('progressFill').style.width = (current / total * 100) + '%';
+    document.getElementById('btnBack').style.visibility = current === 1 ? 'hidden' : 'visible';
+    var btn = document.getElementById('btnNext');
+    if (current === total) {
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Publish listing';
+      btn.setAttribute('data-publish', 'true');
+    } else {
+      btn.innerHTML = 'Continue <i class="fa-solid fa-arrow-right"></i>';
+      btn.removeAttribute('data-publish');
+    }
+    if (current === 4) populateReview();
+    window.scrollTo(0, 0);
+  }
+
+  function populateReview() {
+    var title = document.querySelector('[name="listing[title]"]').value;
+    var desc = document.querySelector('[name="listing[description]"]').value;
+    var loc = document.querySelector('[name="listing[location]"]').value;
+    var country = document.querySelector('[name="listing[country]"]').value;
+    var price = document.querySelector('[name="listing[price]"]').value;
+    var hasPhoto = document.getElementById('previewImg').src && document.getElementById('previewImg').src !== window.location.href;
+
+    document.getElementById('rv-title').textContent = title || '—';
+    document.getElementById('rv-desc').textContent = desc ? desc.substring(0, 80) + (desc.length > 80 ? '…' : '') : '—';
+    document.getElementById('rv-loc').textContent = loc || '—';
+    document.getElementById('rv-country').textContent = country || '—';
+    document.getElementById('rv-price').textContent = price ? '₹' + parseInt(price).toLocaleString('en-IN') + ' / night' : '—';
+    document.getElementById('rv-photo').textContent = hasPhoto ? '1 photo ready' : 'No photo uploaded';
+  }
+
+  function validateStep(step) {
+    if (step === 1) {
+      var title = document.querySelector('[name="listing[title]"]').value.trim();
+      var desc = document.querySelector('[name="listing[description]"]').value.trim();
+      if (!title) { document.querySelector('[name="listing[title]"]').focus(); return false; }
+      if (!desc) { document.querySelector('[name="listing[description]"]').focus(); return false; }
+    }
+    if (step === 3) {
+      var country = document.querySelector('[name="listing[country]"]').value.trim();
+      var loc = document.querySelector('[name="listing[location]"]').value.trim();
+      var price = document.querySelector('[name="listing[price]"]').value;
+      if (!country || !loc || !price) return false;
+    }
+    return true;
+  }
+
+  document.getElementById('btnNext').addEventListener('click', function() {
+    if (this.getAttribute('data-publish') === 'true') {
+      // Submit the form
+      document.getElementById('listingForm').submit();
+      return;
+    }
+    if (!validateStep(current)) {
+      // Shake effect on invalid
+      var body = document.querySelector('.wz-right-body');
+      body.style.animation = 'none';
+      body.offsetHeight;
+      body.style.animation = '';
+      return;
+    }
+    if (current < total) { current++; updateUI(); }
+  });
+
+  document.getElementById('btnBack').addEventListener('click', function() {
+    if (current > 1) { current--; updateUI(); }
+  });
+
+  // Amenity chips toggle
+  document.querySelectorAll('.amenity-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() { this.classList.toggle('selected'); });
+  });
+
+  // Image preview
+  document.getElementById('imgInput').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      document.getElementById('previewImg').src = ev.target.result;
+      document.getElementById('imgPreview').style.display = 'block';
+      document.getElementById('uploadArea').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('changeImgBtn').addEventListener('click', function() {
+    document.getElementById('imgPreview').style.display = 'none';
+    document.getElementById('uploadArea').style.display = 'block';
+    document.getElementById('imgInput').value = '';
+  });
+</script>

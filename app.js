@@ -26,7 +26,7 @@ const User = require("./Models/user.js");
 const userRouter = require("./routes/user.js");
 const MONGO_URL = "mongodb://127.0.0.1:27017/Wanderlust";
 const dbUrl= process.env.ATLAS_URL
-// const reviews = require("../ProjectAirBnb/Models/reviews.js");
+
 
 const store = MongoStore.create({
     mongoUrl: dbUrl,

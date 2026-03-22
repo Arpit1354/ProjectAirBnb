@@ -1,15 +1,140 @@
-<footer>
-   
-    <div class="f-info">
-        <div class="f-info-socials">
-         <i class="fa-brands fa-square-facebook"></i>
-         <i class="fa-brands fa-square-instagram"></i>
-         <i class="fa-brands fa-linkedin"></i>
+<style>
+  .wl-footer {
+    background: #f7f7f7;
+    border-top: 1px solid #ebebeb;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .ft-main {
+    max-width: 1280px; margin: 0 auto;
+    padding: 48px 32px 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 48px;
+    border-bottom: 1px solid #e8e8e8;
+  }
+  @media (max-width: 960px) { .ft-main { grid-template-columns: 1fr 1fr; gap: 36px; } }
+  @media (max-width: 540px) { .ft-main { grid-template-columns: 1fr; gap: 28px; padding: 36px 20px 28px; } }
+
+  .ft-logo { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+  .ft-logo-icon { width: 33px; height: 33px; background: #fe424d; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+  .ft-logo-icon i { color: white; font-size: 15px; }
+  .ft-logo-name { font-size: 15px; font-weight: 600; color: #111; letter-spacing: -0.2px; }
+  .ft-tagline { font-size: 13px; color: #888; line-height: 1.75; max-width: 230px; margin-bottom: 22px; }
+
+  .ft-nl-label { font-size: 11.5px; font-weight: 600; color: #555; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 10px; }
+  .ft-newsletter {
+    display: flex; margin-bottom: 8px;
+    border-radius: 9px; overflow: hidden;
+    border: 1px solid #e0e0e0; background: #fff;
+  }
+  .ft-newsletter input {
+    flex: 1; border: none; background: transparent;
+    padding: 10px 13px; font-size: 13px; color: #111;
+    outline: none; font-family: 'Plus Jakarta Sans', sans-serif; min-width: 0;
+  }
+  .ft-newsletter input::placeholder { color: #bbb; }
+  .ft-newsletter button {
+    background: #fe424d; border: none; padding: 10px 16px;
+    font-size: 13px; font-weight: 500; color: #fff;
+    cursor: pointer; transition: background .15s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .ft-newsletter button:hover { background: #e03540; }
+  .ft-nl-note { font-size: 11px; color: #bbb; line-height: 1.5; }
+
+  .ft-col-title { font-size: 11px; font-weight: 700; color: #111; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 16px;  text-align: left; margin-left: 32px;}
+  .ft-links { list-style: none; display: flex; flex-direction: column; gap: 11px; align-items: flex-start; }
+  .ft-links a { font-size: 13.5px; color: #666; text-decoration: none; transition: color .15s; text-align: left;}
+  .ft-links a:hover { color: #111; }
+
+  .ft-bottom {
+    max-width: 1280px; margin: 0 auto; padding: 18px 32px;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 14px;
+  }
+  @media (max-width: 540px) { .ft-bottom { padding: 16px 20px; flex-direction: column; align-items: flex-start; } }
+
+  .ft-copy { font-size: 12.5px; color: #aaa; }
+  .ft-socials { display: flex; gap: 8px; }
+  .ft-soc {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1px solid #e0e0e0; background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: border-color .15s, background .15s;
+  }
+  .ft-soc:hover { border-color: #fe424d; background: #fff0f0; }
+  .ft-soc i { font-size: 13px; color: #999; transition: color .15s; }
+  .ft-soc:hover i { color: #fe424d; }
+
+  .ft-legal { display: flex; gap: 18px; flex-wrap: wrap; }
+  .ft-legal a { font-size: 12.5px; color: #313131; text-decoration: none; transition: color .15s; }
+  .ft-legal a:hover { color: #111; }
+</style>
+
+<footer class="wl-footer">
+  <div class="ft-main">
+    <div>
+      <div class="ft-logo">
+        <div class="ft-logo-icon"><i class="fa-regular fa-compass"></i></div>
+        <span class="ft-logo-name">Wanderlust</span>
+      </div>
+      <p class="ft-tagline">Discover unique stays and travel experiences around the world. Your next adventure starts here.</p>
+      <p class="ft-nl-label">Stay inspired</p>
+      <div class="ft-newsletter">
+        <input type="email" placeholder="Your email address" />
+        <button type="button">Subscribe</button>
+      </div>
+      <p class="ft-nl-note">Travel deals and inspiration. No spam, ever.</p>
     </div>
-    <div class="f-info-brand">&copy;  Wanderlust Private Limited</div>
-    <div class="f-info-links">
-        <a>Privacy</a>
-        <a>Terms</a> 
+
+    <div>
+      <p class="ft-col-title">Explore</p>
+      <ul class="ft-links">
+        <li><a href="/listings">All listings</a></li>
+        <li><a href="#">Trending stays</a></li>
+        <li><a href="#">Mountain retreats</a></li>
+        <li><a href="#">Beachfront homes</a></li>
+        <li><a href="#">Iconic cities</a></li>
+        <li><a href="#">Farm stays</a></li>
+      </ul>
     </div>
+
+    <div>
+      <p class="ft-col-title">Hosting</p>
+      <ul class="ft-links">
+        <li><a href="/listings/new">Airbnb your home</a></li>
+        <li><a href="#">Host resources</a></li>
+        <li><a href="#">Community forum</a></li>
+        <li><a href="#">Responsible hosting</a></li>
+        <li><a href="#">Host guarantee</a></li>
+      </ul>
     </div>
+
+    <div>
+      <p class="ft-col-title">Support</p>
+      <ul class="ft-links">
+        <li><a href="#">Help centre</a></li>
+        <li><a href="#">Safety information</a></li>
+        <li><a href="#">Cancellation options</a></li>
+        <li><a href="#">Report a concern</a></li>
+        <li><a href="#">Contact us</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="ft-bottom">
+    <span class="ft-copy" style="color: #313131;">&copy; 2025 Wanderlust Private Limited. All rights reserved.</span>
+    <div class="ft-socials">
+      <a class="ft-soc" href="#" style="color: #313131;"><i class="fa-brands fa-facebook-f"></i></a>
+      <a class="ft-soc" href="#" style="color: #313131;"><i class="fa-brands fa-instagram"></i></a>
+      <a class="ft-soc" href="#" style="color: #313131;"><i class="fa-brands fa-x-twitter"></i></a>
+      <a class="ft-soc" href="#" style="color: #313131;"><i class="fa-brands fa-linkedin-in"></i></a>
+    </div>
+    <div class="ft-legal">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Sitemap</a>
+      <a href="#">Cookie policy</a>
+    </div>
+  </div>
 </footer>

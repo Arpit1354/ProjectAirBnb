@@ -1,54 +1,287 @@
 <% layout("/layouts/boilerplate") %>
-        <div class="row mt-3 offset-3">
-        <div class="col-8">
-        <h2>Edit your Listing</h2>
-        <form method="post" action="/listings/<%= listing._id %>?_method=put" enctype="multipart/form-data" novalidate class="needs-validation">
-       
-        <div class="mb-3">
-        <label for="title" class="form-label" >Title</label>
-        <input name="listing[title]" value="<%=listing.title %>" type="text" class="form-control" required>
-        <div class="invalid-feedback">Please enter a Title</div>
+
+<style>
+  * { box-sizing: border-box; }
+
+  .edit-page {
+    max-width: 720px; margin: 36px auto;
+    padding: 0 16px 60px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 { font-size: 24px; font-weight: 800; color: #111; letter-spacing: -0.3px; }
+  .page-header p { font-size: 14px; color: #888; margin-top: 5px; }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13.5px; color: #888; text-decoration: none;
+    margin-bottom: 20px; transition: color .15s;
+  }
+  .back-link:hover { color: #111; }
+
+  .form-card { background: #fff; border-radius: 20px; border: 1px solid #ebebeb; overflow: hidden; }
+
+  .form-section { padding: 26px 30px; border-bottom: 1px solid #f0f0f0; }
+  .form-section:last-child { border-bottom: none; }
+
+  .section-title {
+    font-size: 11px; font-weight: 700; color: #888;
+    letter-spacing: .08em; text-transform: uppercase;
+    margin-bottom: 18px; display: flex; align-items: center; gap: 7px;
+  }
+  .section-title i { font-size: 12px; color: #fe424d; }
+
+  .ef-field { margin-bottom: 16px; }
+  .ef-field:last-child { margin-bottom: 0; }
+  .ef-field label { display: block; font-size: 13px; font-weight: 500; color: #444; margin-bottom: 6px; }
+  .ef-field input,
+  .ef-field textarea {
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid #e8e8e8; border-radius: 10px;
+    font-size: 14px; color: #111; background: #fafafa;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: border-color .15s, box-shadow .15s; outline: none;
+  }
+  .ef-field input:focus,
+  .ef-field textarea:focus {
+    border-color: #fe424d; background: #fff;
+    box-shadow: 0 0 0 3px rgba(254,66,77,.08);
+  }
+  .ef-field input::placeholder,
+  .ef-field textarea::placeholder { color: #bbb; }
+  .ef-field textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+  .ef-field .field-hint { font-size: 12px; color: #bbb; margin-top: 5px; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 540px) { .field-row { grid-template-columns: 1fr; } }
+
+  /* Current image preview */
+  .current-img-wrap {
+    display: flex; align-items: flex-start; gap: 16px;
+    background: #f9f9f9; border-radius: 12px; padding: 14px;
+    margin-bottom: 16px; border: 1px solid #f0f0f0;
+  }
+  .current-img-wrap img {
+    width: 100px; height: 70px; object-fit: cover;
+    border-radius: 8px; flex-shrink: 0;
+  }
+  .current-img-info p { font-size: 13px; font-weight: 500; color: #444; margin: 0 0 4px; }
+  .current-img-info span { font-size: 12px; color: #aaa; }
+
+  /* Upload area */
+  .img-upload-area {
+    border: 2px dashed #e0e0e0; border-radius: 12px;
+    padding: 24px 20px; text-align: center; cursor: pointer;
+    transition: border-color .15s, background .15s;
+    position: relative; background: #fafafa;
+  }
+  .img-upload-area:hover { border-color: #fe424d; background: #fff5f5; }
+  .img-upload-area input[type="file"] {
+    position: absolute; inset: 0; opacity: 0;
+    cursor: pointer; width: 100%; height: 100%;
+  }
+  .img-upload-icon { width: 40px; height: 40px; background: #f0f0f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+  .img-upload-icon i { font-size: 17px; color: #bbb; }
+  .img-upload-title { font-size: 13.5px; font-weight: 500; color: #333; margin-bottom: 3px; }
+  .img-upload-sub { font-size: 12px; color: #bbb; }
+  .new-img-preview { display: none; margin-top: 12px; border-radius: 10px; overflow: hidden; }
+  .new-img-preview img { width: 100%; height: 160px; object-fit: cover; }
+
+  /* Price */
+  .price-wrap { position: relative; max-width: 200px; }
+  .price-sym { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 14px; font-weight: 700; color: #888; pointer-events: none; }
+  .price-wrap input { padding-left: 32px; font-size: 16px; font-weight: 700; }
+
+  /* Footer */
+  .form-footer {
+    padding: 22px 30px; background: #fafafa;
+    border-top: 1px solid #f0f0f0;
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  }
+  .btn-cancel {
+    font-size: 14px; color: #888; text-decoration: none;
+    padding: 10px 18px; border-radius: 10px;
+    transition: background .15s; font-weight: 500;
+  }
+  .btn-cancel:hover { background: #f0f0f0; color: #444; }
+  .btn-save {
+    background: #111; color: #fff; border: none;
+    border-radius: 10px; padding: 12px 28px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background .15s, transform .1s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-save:hover { background: #333; }
+  .btn-save:active { transform: scale(.98); }
+
+  @media (max-width: 600px) {
+    .form-section { padding: 20px 18px; }
+    .form-footer { padding: 18px; }
+    .page-header h1 { font-size: 20px; }
+    .current-img-wrap { flex-direction: column; }
+    .current-img-wrap img { width: 100%; height: 140px; }
+  }
+</style>
+
+<div class="edit-page">
+  <a class="back-link" href="/listings/<%= listing._id %>">
+    ← Back to listing
+  </a>
+
+  <div class="page-header">
+    <h1>Edit your listing</h1>
+    <p>Update the details below and save your changes</p>
+  </div>
+
+  <div class="form-card">
+    <form
+      method="POST"
+      action="/listings/<%= listing._id %>?_method=PUT"
+      enctype="multipart/form-data"
+      novalidate
+      class="needs-validation"
+      id="editForm"
+    >
+      <!-- Basic info -->
+      <div class="form-section">
+        <div class="section-title"><i class="fa-solid fa-house"></i> Basic info</div>
+
+        <div class="ef-field">
+          <label>Listing title</label>
+          <input
+            name="listing[title]"
+            type="text"
+            value="<%= listing.title %>"
+            placeholder="Enter a catchy title"
+            required
+          />
+          <div class="field-hint">Keep it short and memorable</div>
         </div>
 
-        <div class="mb-3">
-        <label for="description" class="form-label" >Description</label>
-        <textarea name="listing[description]" required class="form-control"   required><%=listing.description %> 
-        </textarea>
-        <div class="invalid-feedback">Please enter a short description</div>
+        <div class="ef-field">
+          <label>Description</label>
+          <textarea
+            name="listing[description]"
+            placeholder="Describe your place…"
+            required
+          ><%= listing.description %></textarea>
         </div>
-       <div class="mb-3">
-         Original Listing Image<br>
-         <img src="<%= Orignalurl %>" alt="Image_listing">
-       </div>
-        <div class="mb-3">
-        <label for="image" class="form-label" >Upload new Image link</label>
-        <input name="listing[image]" value="<%= listing.image.url %>" class="form-control"  type="file" >
-        <div class="invalid-feedback">Please enter image link</div>
-         </div>
-        <div class="row">
-        <div class="mb-3  col-md-4">
-        <label for="price" class="form-label" >Price</label>
-        <input name="listing[price]" class="form-control" value="<%=listing.price %>"  type="number" required>
-        <div class="invalid-feedback">Please enter a valid price</div>
-        </div>
-        
-        <div class="mb-3  col-md-8">
-        <label for="country" class="form-label" >Country</label> 
-        <input name="listing[country]"  class="form-control"  value="<%=listing.country %>"  type="text" required>
-        <div class="invalid-feedback">Please enter a Country</div>
+      </div>
+
+      <!-- Photo -->
+      <div class="form-section">
+        <div class="section-title"><i class="fa-solid fa-image"></i> Photo</div>
+
+        <div class="current-img-wrap">
+          <img src="<%= Orignalurl %>" alt="Current listing image"/>
+          <div class="current-img-info">
+            <p>Current photo</p>
+            <span>Upload a new image below to replace it</span>
+          </div>
         </div>
 
+        <div class="img-upload-area" id="uploadArea">
+          <input
+            name="listing[image]"
+            type="file"
+            accept="image/*"
+            id="imgInput"
+          />
+          <div class="img-upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+          <div class="img-upload-title">Click to upload a new photo</div>
+          <div class="img-upload-sub">JPG, PNG or WEBP · optional</div>
         </div>
-
-         <div class="mb-3">
-        <label for="location" class="form-label" >Location</label> 
-        <input name="listing[location]" class="form-control"   value="<%=listing.location %>"  type="text" required>
-        <div class="invalid-feedback">Please enter a Location</div>
-         </div>
-
-            <button class="btn btn-dark edit-btn mt-3">Edit location</button><br><br>
-        </form>
+        <div class="new-img-preview" id="newImgPreview">
+          <img id="previewImg" src="" alt="New image preview"/>
         </div>
-     </div>
-  
+      </div>
 
+      <!-- Location -->
+      <div class="form-section">
+        <div class="section-title"><i class="fa-solid fa-location-dot"></i> Location</div>
+        <div class="field-row">
+          <div class="ef-field">
+            <label>Country</label>
+            <input
+              name="listing[country]"
+              type="text"
+              value="<%= listing.country %>"
+              placeholder="e.g. India"
+              required
+            />
+          </div>
+          <div class="ef-field">
+            <label>City / location</label>
+            <input
+              name="listing[location]"
+              type="text"
+              value="<%= listing.location %>"
+              placeholder="e.g. Manali, HP"
+              required
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div class="form-section">
+        <div class="section-title"><i class="fa-solid fa-tag"></i> Pricing</div>
+        <div class="ef-field">
+          <label>Price per night</label>
+          <div class="price-wrap">
+            <span class="price-sym">₹</span>
+            <input
+              name="listing[price]"
+              type="number"
+              value="<%= listing.price %>"
+              placeholder="0"
+              min="0"
+              required
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="form-footer">
+        <a class="btn-cancel" href="/listings/<%= listing._id %>">Cancel</a>
+        <button class="btn-save" type="submit">
+          <i class="fa-solid fa-floppy-disk"></i> Save changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // New image preview
+  document.getElementById('imgInput').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      document.getElementById('previewImg').src = ev.target.result;
+      document.getElementById('newImgPreview').style.display = 'block';
+      document.getElementById('uploadArea').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Validation
+  document.getElementById('editForm').addEventListener('submit', function(e) {
+    var inputs = this.querySelectorAll('[required]');
+    var valid = true;
+    inputs.forEach(function(input) {
+      if (!input.value.trim()) {
+        input.style.borderColor = '#fe424d';
+        valid = false;
+      } else {
+        input.style.borderColor = '';
+      }
+    });
+    if (!valid) e.preventDefault();
+  });
+</script>

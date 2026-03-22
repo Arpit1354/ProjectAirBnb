@@ -1,52 +1,324 @@
 <style>
-  .btn-search{
-   background-color: #fe424d;
-   color:white;
-   display: flex;
-   align-items: center;
-   border-radius: 2rem;
-   padding: 0 1rem 0 1rem;
+  :root { --brand: #fe424d; --brand-dark: #e03540; }
+  * { box-sizing: border-box; }
+
+  /* ── DESKTOP NAV ── */
+  .wl-nav {
+    background: #fff; border-bottom: 1px solid #f0f0f0;
+    height: 64px; display: flex; align-items: center;
+    padding: 0 24px; gap: 16px; position: sticky; top: 0; z-index: 100;
   }
-  .btn-search:hover{
-   background-color: #fe424d;
-   color:white;
+  .wl-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; flex-shrink: 0; }
+  .wl-brand-icon { width: 32px; height: 32px; background: var(--brand); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .wl-brand-icon i { color: white; font-size: 15px; }
+  .wl-brand-name { font-size: 15px; font-weight: 600; color: #111; letter-spacing: -0.2px; }
+
+  /* Desktop search */
+  .wl-search {
+    flex: 1; max-width: 400px; margin: 0 auto;
+    display: flex; align-items: center;
+    border: 1.5px solid #e8e8e8; border-radius: 40px;
+    padding: 6px 6px 6px 16px; background: #fafafa;
+    transition: border-color .15s, box-shadow .15s;
   }
-  .btn-search i {
-  display: inline;
-  margin-right: 0.5rem;
-}
-.search-inp{
-  border-radius: 25px;
-  padding: 0.25rem 3rem 0.25rem 2rem;
-  font-size: 0.9rem;
-}
+  .wl-search:focus-within { border-color: var(--brand); background: #fff; box-shadow: 0 0 0 3px rgba(254,66,77,.08); }
+  .wl-search i { color: #bbb; font-size: 13px; flex-shrink: 0; }
+  .wl-search input {
+    border: none; background: transparent; outline: none;
+    flex: 1; font-size: 13.5px; color: #111; padding: 0 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .wl-search input::placeholder { color: #bbb; }
+  .wl-search-btn {
+    background: var(--brand); border: none; border-radius: 999px;
+    width: 32px; height: 32px; display: flex; align-items: center;
+    justify-content: center; cursor: pointer; flex-shrink: 0;
+    transition: background .15s;
+  }
+  .wl-search-btn:hover { background: var(--brand-dark); }
+  .wl-search-btn i { color: white; font-size: 12px; }
+
+  /* Desktop right links */
+  .wl-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin-left: auto; }
+  .wl-link { font-size: 13.5px; color: #444; text-decoration: none; padding: 7px 12px; border-radius: 8px; font-weight: 500; transition: background .12s; white-space: nowrap; }
+  .wl-link:hover { background: #f5f5f5; color: #111; }
+  .wl-sep { width: 1px; height: 18px; background: #e8e8e8; margin: 0 6px; }
+
+  /* User pill + dropdown */
+  .user-menu-wrap { position: relative; }
+  .user-pill {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 6px 6px 14px; border: 1px solid #e0e0e0;
+    border-radius: 999px; background: #fff; cursor: pointer;
+    transition: border-color .15s, box-shadow .15s; user-select: none;
+  }
+  .user-pill:hover { border-color: #bbb; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .hbg { display: flex; flex-direction: column; gap: 3.5px; }
+  .hbg span { display: block; width: 14px; height: 1.5px; background: #555; border-radius: 2px; }
+  .u-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--brand); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white; flex-shrink: 0; }
+  .u-avatar.guest { background: #ddd; }
+  .u-avatar.guest i { color: #888; font-size: 14px; }
+
+  .wl-dropdown {
+    position: absolute; top: calc(100% + 10px); right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 14px;
+    min-width: 210px; box-shadow: 0 8px 30px rgba(0,0,0,.12);
+    overflow: hidden; z-index: 1000;
+    opacity: 0; transform: translateY(-6px); pointer-events: none;
+    transition: opacity .15s, transform .15s;
+  }
+  .wl-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: all; }
+  .dd-item { display: block; padding: 11px 18px; font-size: 13.5px; color: #222; text-decoration: none; transition: background .1s; font-weight: 400; }
+  .dd-item:hover { background: #f7f7f7; color: #111; }
+  .dd-item.fw { font-weight: 600; }
+  .dd-sep { height: 1px; background: #f0f0f0; margin: 4px 0; }
+  .dd-danger { color: var(--brand); }
+  .dd-danger:hover { background: #fff5f5; }
+
+  /* ── MOBILE NAV RIGHT ACTIONS ── */
+  .wl-mobile-actions {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .wl-mob-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1px solid #ebebeb; background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; cursor: pointer;
+    transition: border-color .15s, background .15s;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .wl-mob-btn:hover { border-color: #ddd; background: #f9f9f9; }
+  .wl-mob-btn i { font-size: 15px; color: #444; }
+  .wl-mob-notif-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--brand); border: 1.5px solid #fff;
+  }
+  .wl-mob-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--brand); border: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; color: white;
+    cursor: pointer; flex-shrink: 0;
+    transition: opacity .15s;
+  }
+  .wl-mob-avatar:hover { opacity: .85; }
+  .wl-mob-avatar.guest { background: #ddd; }
+  .wl-mob-avatar.guest i { color: #888; font-size: 14px; }
+
+  /* Mobile dropdown (reuse desktop styles) */
+  .wl-mob-menu-wrap { position: relative; }
+
+  /* ── MOBILE BOTTOM TAB BAR ── */
+  .wl-mobile-bar {
+    display: none; position: fixed; bottom: 0; left: 0; right: 0;
+    height: 60px; background: #fff; border-top: 1px solid #f0f0f0;
+    z-index: 500; align-items: center; justify-content: center;
+    padding: 0 24px;
+  }
+  .wl-tabs { display: flex; height: 100%; width: 100%; justify-content: space-around; }
+  .wl-tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 3px; text-decoration: none;
+    color: #888; font-weight: 500; transition: color .15s; max-width: 80px;
+  }
+  .wl-tab i { font-size: 20px; }
+  .wl-tab span { font-size: 10.5px; }
+  .wl-tab.active { color: var(--brand); }
+
+  @media (max-width: 768px) {
+    .wl-search { display: none; }
+    .wl-right { display: none; }
+    .wl-mobile-actions { display: flex; }
+    .wl-mobile-bar { display: flex; }
+    body { padding-bottom: 60px; }
+  }
 </style>
- 
-<nav class="navbar navbar-expand-lg bg-body-light border-bottom sticky-top">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/listings"><i class="fa-regular fa-compass"></i></a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+
+<!-- NAV -->
+<nav class="wl-nav">
+
+  <!-- Brand -->
+  <a class="wl-brand" href="/listings">
+    <div class="wl-brand-icon"><i class="fa-regular fa-compass"></i></div>
+    <span class="wl-brand-name">Wanderlust</span>
+  </a>
+
+  <!-- Desktop search -->
+  <div class="wl-search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input
+      type="search"
+      id="navSearch"
+      placeholder="Search destinations…"
+      value="<%= locals.search || '' %>"
+      autocomplete="off"
+    />
+    <button class="wl-search-btn" id="navSearchBtn" type="button">
+      <i class="fa-solid fa-magnifying-glass"></i>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-      <div class="navbar-nav">
-        <a class="nav-link" href="/listings">Explore</a>
+  </div>
+
+  <!-- Desktop right -->
+  <div class="wl-right">
+    <a class="wl-link" href="/listings">Explore</a>
+    <a class="wl-link" href="/listings/new">Airbnb your home</a>
+    <div class="wl-sep"></div>
+    <div class="user-menu-wrap">
+      <div class="user-pill" id="userPill">
+        <div class="hbg"><span></span><span></span><span></span></div>
+        <% if (locals.currUser) { %>
+          <div class="u-avatar"><%= locals.currUser.username.charAt(0).toUpperCase() %></div>
+        <% } else { %>
+          <div class="u-avatar guest"><i class="fa-regular fa-user"></i></div>
+        <% } %>
       </div>
-      <div class="navbar-nav ms-auto">
-      <form class="d-flex" role="search">
-      <input class="form-control me-2 search-inp" type="search" placeholder="Search Destination" aria-label="Search"/>
-      <button class="btn btn-search" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
-    </form>
-    </div> 
-      <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/listings/new">Airbnb your home</a>
-        <% if (!currUser) {%>
-           <a class="nav-link " aria-current="page" href="/user/signup"><b>Sign up</b></a>
-        <a class="nav-link" href="/user/login"><b>Log in</b></a>
-       <%  }  if(currUser){%>
-        <a class="nav-link" href="/user/logout"><b>Log out</b></a>
-        <% }%>
+      <div class="wl-dropdown" id="wlDropdown">
+        <% if (locals.currUser) { %>
+          <div class="dd-item fw">Hi, <%= locals.currUser.username %> 👋</div>
+          <div class="dd-sep"></div>
+          <a class="dd-item" href="#">My trips</a>
+          <a class="dd-item" href="#">Wishlists</a>
+          <a class="dd-item" href="/listings/new">My listings</a>
+          <div class="dd-sep"></div>
+          <a class="dd-item" href="/listings/new">Airbnb your home</a>
+          <a class="dd-item" href="#">Help centre</a>
+          <div class="dd-sep"></div>
+          <a class="dd-item dd-danger" href="/user/logout">Log out</a>
+        <% } else { %>
+          <a class="dd-item fw" href="/user/signup">Sign up</a>
+          <a class="dd-item" href="/user/login">Log in</a>
+          <div class="dd-sep"></div>
+          <a class="dd-item" href="/listings/new">Airbnb your home</a>
+          <a class="dd-item" href="#">Help centre</a>
+        <% } %>
       </div>
     </div>
   </div>
+
+  <!-- Mobile right actions (replaces empty space) -->
+  <div class="wl-mobile-actions">
+    <!-- Notification bell -->
+    <div class="wl-mob-btn">
+      <i class="fa-regular fa-bell"></i>
+      <span class="wl-mob-notif-dot"></span>
+    </div>
+
+    <!-- Host shortcut -->
+    <a class="wl-mob-btn" href="/listings/new" title="Add listing">
+      <i class="fa-solid fa-plus"></i>
+    </a>
+
+    <!-- Avatar / profile -->
+    <div class="wl-mob-menu-wrap">
+      <% if (locals.currUser) { %>
+        <div class="wl-mob-avatar" id="mobAvatarBtn">
+          <%= locals.currUser.username.charAt(0).toUpperCase() %>
+        </div>
+      <% } else { %>
+        <a class="wl-mob-avatar guest" href="/user/login">
+          <i class="fa-regular fa-user"></i>
+        </a>
+      <% } %>
+      <div class="wl-dropdown" id="mobDropdown">
+        <% if (locals.currUser) { %>
+          <div class="dd-item fw">Hi, <%= locals.currUser.username %> 👋</div>
+          <div class="dd-sep"></div>
+          <a class="dd-item" href="#">My trips</a>
+          <a class="dd-item" href="#">Wishlists</a>
+          <a class="dd-item" href="/listings/new">My listings</a>
+          <div class="dd-sep"></div>
+          <a class="dd-item dd-danger" href="/user/logout">Log out</a>
+        <% } else { %>
+          <a class="dd-item fw" href="/user/signup">Sign up</a>
+          <a class="dd-item" href="/user/login">Log in</a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
 </nav>
+
+<!-- MOBILE BOTTOM TAB BAR -->
+<div class="wl-mobile-bar">
+  <div class="wl-tabs">
+    <a class="wl-tab active" href="/listings">
+      <i class="fa-solid fa-compass"></i>
+      <span>Explore</span>
+    </a>
+    <a class="wl-tab" href="#">
+      <i class="fa-regular fa-heart"></i>
+      <span>Wishlists</span>
+    </a>
+    <a class="wl-tab" href="/listings/new">
+      <i class="fa-solid fa-plus"></i>
+      <span>Host</span>
+    </a>
+    <a class="wl-tab" href="<% if (locals.currUser) { %>#<% } else { %>/user/login<% } %>">
+      <i class="fa-regular fa-user"></i>
+      <span><% if (locals.currUser) { %>Profile<% } else { %>Log in<% } %></span>
+    </a>
+  </div>
+</div>
+
+<script>
+  // ── Desktop dropdown ──
+  document.getElementById('userPill').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('wlDropdown').classList.toggle('open');
+  });
+
+  // ── Mobile avatar dropdown ──
+  const mobAvatarBtn = document.getElementById('mobAvatarBtn');
+  if (mobAvatarBtn) {
+    mobAvatarBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('mobDropdown').classList.toggle('open');
+    });
+  }
+
+  // Close all dropdowns on outside click
+  document.addEventListener('click', function() {
+    document.querySelectorAll('.wl-dropdown').forEach(function(d) {
+      d.classList.remove('open');
+    });
+  });
+
+  // ── Mobile tab active state ──
+  document.querySelectorAll('.wl-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.wl-tab').forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+    });
+  });
+
+  // ── Desktop navbar search ──
+  (function () {
+    const input = document.getElementById('navSearch');
+    const btn = document.getElementById('navSearchBtn');
+    if (!input) return;
+
+    function doSearch(val) {
+      const q = val.trim();
+      window.location.href = q
+        ? '/listings?search=' + encodeURIComponent(q)
+        : '/listings';
+    }
+
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); doSearch(this.value); }
+    });
+
+    if (btn) btn.addEventListener('click', function() {
+      doSearch(input.value);
+    });
+
+    input.addEventListener('search', function() {
+      if (this.value === '') window.location.href = '/listings';
+    });
+  })();
+</script>

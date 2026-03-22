@@ -1,9 +1,27 @@
 const Listing = require("../Models/Listing.js");
 
-module.exports.index =  async (req,res)=>{
-   const allListings =   await Listing.find({});
-   res.render("./listings/index.ejs",{allListings});
-} 
+module.exports.index = async (req, res) => {
+  const { search } = req.query;
+  let query = {};
+
+  if (search && search.trim() !== "") {
+    const regex = new RegExp(search.trim(), "i");
+    query = {
+      $or: [
+        { title: regex },
+        { location: regex },
+        { description: regex },
+        { country: regex }
+      ]
+    };
+  }
+
+  const allListings = await Listing.find(query);
+  res.render("listings/index.ejs", { 
+    allListings, 
+    search: search || "" 
+  });
+};
 module.exports.rendernewForm = (req,res)=>{
     if(!req.isAuthenticated()){
     req.flash("error", "You must be logged in to create listing!");
